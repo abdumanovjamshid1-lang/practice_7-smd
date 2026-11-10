@@ -1,62 +1,7 @@
 # CoroutinesLab - Practice 10
 
-This repository contains my solutions for the Coroutines practice assignment (Part A theory questions and Part B coding tasks).
-
----
-
-## Demo Videos (Tasks 1 - 5)
-
-<details>
-<summary><b>Task 1: First coroutine with runBlocking, launch and delay (Click to expand)</b></summary>
-<br>
-
-<!-- Replace the link below with your actual uploaded video link or drag-and-drop video on GitHub -->
-https://github.com/user-attachments/assets/placeholder-task-1.mp4
-
-*Shows: Normal execution order (`Start`, `B done`, `A done`) with `delay()`, and how changing to `Thread.sleep()` forces sequential blocking order.*
-</details>
-
-<details>
-<summary><b>Task 2: suspend function with n tries (Click to expand)</b></summary>
-<br>
-
-https://github.com/user-attachments/assets/placeholder-task-2.mp4
-
-*Shows: Failure path when `n = 2` (exhausting tries and showing cached user), recovery/happy path when `n = 3` (failing twice and getting `User: Ada` on 3rd try), and the compiler error when calling `fetchName()` from a regular function.*
-</details>
-
-<details>
-<summary><b>Task 3: Control coroutine with Job (Click to expand)</b></summary>
-<br>
-
-https://github.com/user-attachments/assets/placeholder-task-3.mp4
-
-*Shows: Waiting 250ms and cancelling via `cancelAndJoin()` (`isCancelled=true` and `cleanup` printed), plus the optional run with `join()` printing all 5 ticks.*
-</details>
-
-<details>
-<summary><b>Task 4: Load name and age with async (Click to expand)</b></summary>
-<br>
-
-https://github.com/user-attachments/assets/placeholder-task-4.mp4
-
-*Shows: Sequential call taking ~200ms, concurrent `async` taking ~100ms, and calling `await()` immediately after each `async` going back to ~200ms.*
-</details>
-
-<details>
-<summary><b>Task 5: Find thread of each dispatcher (Click to expand)</b></summary>
-<br>
-
-https://github.com/user-attachments/assets/placeholder-task-5.mp4
-
-*Shows: Thread names printed for `Default`, `IO`, `Unconfined`, `newSingleThreadContext("MyThread")` before and after `delay()`, and inherited `main` dispatcher.*
-</details>
-
----
-
-## Part A. Theory Questions (Q1 – Q10)
-
-### Q1. Explain difference between `newSingleThreadContext` and `Dispatchers.Unconfined`. Show code example.
+This repository contains my solutions for the Coroutines practice assignment.
+ Q1. Explain difference between `newSingleThreadContext` and `Dispatchers.Unconfined`. Show code example.
 `newSingleThreadContext` creates a brand new, dedicated OS thread just for our coroutine. Because it is a real thread that takes up memory, we have to manually call `.close()` on it when we are done, otherwise it stays alive and causes a memory/thread leak. If we put a `delay()` inside it, the coroutine runs on this custom thread before `delay()`, and wakes up on the exact same custom thread after `delay()`.
 
 `Dispatchers.Unconfined` is different because it doesn't lock the coroutine to any specific thread. When it starts, it just runs on whatever thread called it (like `main`). However, after it hits a suspension point like `delay()`, it resumes on the thread that the suspending function used internally (which for `delay()` is usually `kotlinx.coroutines.DefaultExecutor`).
@@ -134,11 +79,7 @@ Structured concurrency means coroutines are always launched inside a specific `C
 2. `withContext(Dispatchers.IO) { ... }`: Suspends the Main coroutine (leaving the UI thread free) and shifts execution of the inner block to a background thread from the **IO thread pool**. Once the block finishes, it switches back to the **Main thread** for any remaining lines inside `launch`.
 3. **When ViewModel is cleared:** When the user leaves the screen and `onCleared()` is called on the `ViewModel`, `viewModelScope` automatically cancels its job, which immediately cancels the running `withContext(Dispatchers.IO)` work so we don't leak memory or waste battery.
 
----
-
-## Part B. Notes & Explanations for Coding Tasks
-
-### Task 1 (Optional): Why does replacing `delay()` with `Thread.sleep()` change the output order?
+### Task 1 : Why does replacing `delay()` with `Thread.sleep()` change the output order?
 When we use `delay()`, Coroutine A and B suspend without blocking the `main` thread, allowing `println("Start")` to run first while A and B wait in the background. When we replace `delay()` with `Thread.sleep()`, the thread gets blocked inside the coroutine as soon as it runs, forcing everything on the single `main` thread to wait sequentially instead of running concurrently.
 
 ### Task 2: Compile error when calling `fetchName()` from a normal function
